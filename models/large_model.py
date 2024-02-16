@@ -32,10 +32,21 @@ def vectorize_texts(data):
     return pooled_output
 
 
-# Pinecone에서 벡터 검색
+# Pinecone에서 벡터 검색 
 def search_vector(index, query_vector):
     search_results = index.query(
         namespace="job1",
+        vector=query_vector,
+        top_k=5,
+        include_values=True,
+        include_metadata=True
+    )
+    return search_results
+
+# Pinecone에서 벡터 네임스페이스 Sector 검색
+def search_sector_vector(index, query_vector):
+    search_results = index.query(
+        namespace="sector1",
         vector=query_vector,
         top_k=5,
         include_values=True,
