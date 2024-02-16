@@ -15,7 +15,7 @@ def vectorize_data(data):
     vectors = model.encode(vectorized_list)
     return vectors
 
-# 메타데이터 생성
+# 직업별 임금정보 메타데이터 생성
 def generate_metadata(data):
     metadata_list = [{
         "category": item['category'], 
@@ -27,6 +27,15 @@ def generate_metadata(data):
     } for item in data]
     return metadata_list
 
+# 업종별 직업정보 메타데이터 생성
+def generate_sectors_metadata(data):
+    metadata_list = [{
+        "category": item['category'], 
+        "id": str(uuid.uuid4()), 
+        "jobs": item["jobs"],
+    } for item in data]
+    return metadata_list
+
 # Pinecone에 업로드할 데이터 포맷
 def format_vectors(vectors, metadata_list):
     formatted_vectors = [(metadata["id"], vector.tolist(), metadata) for vector, metadata in zip(vectors, metadata_list)]
@@ -35,7 +44,7 @@ def format_vectors(vectors, metadata_list):
 # Pinecone에서 벡터 검색
 def search_vector(index, query_vector):
     search_results = index.query(
-        namespace="job4",
+        namespace="job1",
         vector=query_vector,
         top_k=5,
         include_values=True,
