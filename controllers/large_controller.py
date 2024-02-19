@@ -20,7 +20,8 @@ async def create_db():
             status = pc.list_indexes()[0]
             return {"message": "이미 생성된 Vector DB가 있습니다. 생성할 수 없습니다.", "db_name": status["name"], "dimension": status["dimension"]}
         pc.create_index("test", 1024, metric="cosine",spec=PodSpec(environment="gcp-starter"))
-        return {"message": "Vector DB created successfully!"}
+        status = pc.list_indexes()[0]
+        return {"message": "Vector DB created successfully!","db_name": status["name"], "dimension": status["dimension"]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
