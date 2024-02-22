@@ -25,17 +25,46 @@ async def create_db():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@large_router.post("/data_upload/", description="Vector DB에 직업별 임금정보 데이터 업로드")
-async def large_upload_file(dbname:str,file: UploadFile = File(...)):
+@large_router.get("/status_db/", description="생성된 Vector DB 조회")
+async def db_status():
     try:
-        index = pc.Index(dbname)
+        if pc.list_indexes():
+            dblist = pc.list_indexes()[0]
+            index = pc.Index("test")
+            vector_list = index.describe_index_stats()
+            result = {
+                "db_name": dblist["name"],
+                "dimension": dblist["dimension"],
+                "total_vectors": vector_list["total_vector_count"]
+            }
+            return result
+        else:
+            return {"message": "생성된 Vector DB가 없습니다."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))   
+
+@large_router.post("/delete_db/", description="Vector DB 삭제")
+async def delete_db():
+    try:
+        if pc.list_indexes():
+            pc.delete_index("test")
+            return {"message": "Vector DB deleted successfully!"}
+        else:
+            return {"message": "삭제할 Vector DB가 없습니다."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@large_router.post("/data_upload/", description="Vector DB에 직업별 임금정보 데이터 업로드")
+async def large_upload_file(file: UploadFile = File(...)):
+    try:
+        index = pc.Index("test")
         contents = await file.read()
         data = json.loads(contents)
         vectors = vectorize_texts(data)
         metadata_list = generate_metadata(data)
         formatted_vectors = format_vectors(vectors, metadata_list)
         index.upsert(vectors=formatted_vectors, namespace="job1")
-        return {"message": "Data uploaded successfully!"}
+        return {"message": "Data uploaded successfully!", "result":True}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
       
@@ -54,9 +83,9 @@ async def large_sectors_upload_file(dbname:str,file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=str(e))    
     
 @large_router.get("/search/")
-async def large_search_vector(dbname:str, question: str):
+async def large_search_vector(question: str):
     try:
-        index = pc.Index(dbname)
+        index = pc.Index("test")
         vector = vectorize_question(question)[0].tolist()
         search_results = search_vector(index, vector)
         if not search_results.matches:
@@ -93,9 +122,9 @@ async def large_sector_search_vector(dbname:str, question: str):
     
 # 질문 여러개에 대한 유사한 답변을 Vector DB에서 검색후 평균 스코어 및 결과 반환
 @large_router.post("/similarity_verification/")
-async def large_similarity_verification(dbname:str,file: UploadFile = File(...)):
+async def large_similarity_verification(file: UploadFile = File(...)):
     try:
-        index = pc.Index(dbname)
+        index = pc.Index("test")
         content = await file.read()
         data = json.loads(content)
         search_results = []
