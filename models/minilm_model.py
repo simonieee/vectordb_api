@@ -44,7 +44,7 @@ def format_vectors(vectors, metadata_list):
 # Pinecone에서 벡터 검색
 def search_vector(index, query_vector):
     search_results = index.query(
-        namespace="job1",
+        namespace="job2",
         vector=query_vector,
         top_k=5,
         include_values=True,
