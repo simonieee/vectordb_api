@@ -54,7 +54,7 @@ async def delete_db():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@large_router.post("/data_upload/", description="Vector DB에 직업별 임금정보 데이터 업로드")
+@large_router.post("/data_upload/", description="Vector DB에 데이터 업로드")
 async def large_upload_file(file: UploadFile = File(...)):
     try:
         index = pc.Index("test")
@@ -92,11 +92,6 @@ async def large_search_vector(question: str):
             return {"message": "No matches found"}
         d = [{"metadata": match["metadata"],
                 "score": match["score"]}for match in search_results.matches]
-        
-        # result = {
-        #     "metadata": search_results.matches[0]["metadata"],
-        #     "score": search_results.matches[0]["score"]
-        # }
         return d
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -111,11 +106,6 @@ async def large_sector_search_vector(dbname:str, question: str):
             return {"message": "No matches found"}
         d = [{"metadata": match["metadata"],
                 "score": match["score"]}for match in search_results.matches]
-        
-        # result = {
-        #     "metadata": search_results.matches[0]["metadata"],
-        #     "score": search_results.matches[0]["score"]
-        # }
         return d
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
