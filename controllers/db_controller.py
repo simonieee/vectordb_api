@@ -5,7 +5,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 import os
 
-db_router = APIRouter(tags=["Vecror DB 관리"])
+db_router = APIRouter(tags=["Pinecone Vecror DB 관리"])
 
 MONGO_DETAILS = os.getenv("MONGO_DB_URL")
 client = AsyncIOMotorClient(MONGO_DETAILS)
