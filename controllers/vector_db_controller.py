@@ -52,3 +52,36 @@ async def search_vector(db_name: str, model_name: str,text: str):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@vector_db_router.post("/similarity_verification/", description="모델 테스트")
+async def similarity_verification(db_name: str, model_name: str, file: UploadFile = File(...)):
+    try:
+        vector_db = VectorDB(db_name=db_name, model_name=model_name)
+        contents = await file.read()
+        data = json.loads(contents)
+        search_result =[]
+        highlow_data ={
+            "low_data":"",
+            "high_data":"",
+            "low_score":1.0,
+            "high_score":0.0,
+        }
+        for item in data:
+            search_data = vector_db.search_text(item)
+        
+            if search_data[0]["score"] < highlow_data["low_score"]:
+                highlow_data["low_score"] = search_data[0]["score"]
+                highlow_data["low_data"] = search_data[0]
+            if search_data[0]["score"] > highlow_data["high_score"]:
+                highlow_data["high_score"] = search_data[0]["score"]
+                highlow_data["high_data"] = search_data[0]
+            search_result.append(search_data[0])
+
+        result = {
+            "avg_score": sum([item["score"] for item in search_result]) / len(search_result),
+            "highlow_data": highlow_data,
+            "search_result": search_result
+        }
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
