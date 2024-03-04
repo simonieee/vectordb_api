@@ -1,6 +1,5 @@
 import chromadb
 from chromadb.utils import embedding_functions
-from transformers import AutoTokenizer, AutoModel
 import torch
 import torch.nn.functional as F
 import uuid
@@ -84,8 +83,8 @@ class VectorDB:
     def similarity(self, array, text_embedding):
         similarity_data = []
         for item in array:
-          text2_embedding = self.ef(item)
-          s = self.cosine_similarity_pytorch(text_embedding, text2_embedding[0])
+          # text2_embedding = self.ef(item)
+          s = self.cosine_similarity_pytorch(text_embedding, item)
           similarity_data.append(s)
         return similarity_data
         
@@ -94,9 +93,19 @@ class VectorDB:
             logging.info(f"-------------------유사 직무정보 검색중-------------------")
             collection = self.client.get_or_create_collection(name=self.db_name, embedding_function=self.ef)
             search_data = collection.query(query_texts=[text], n_results=5, include=["metadatas","embeddings","documents"])
-            smilarity_score = self.similarity(search_data["documents"][0],self.ef(text)[0])
+            smilarity_score = self.similarity(search_data["embeddings"][0],self.ef(text)[0])
             d = [{"metadata":item, "score":score} for item,score in zip(search_data["metadatas"][0],smilarity_score)]
             logging.info(f"-------------------검색완료-------------------")
             return d
         except Exception as e:
             return {"message": str(e)}
+        
+    # def similarity_verification(self, data):
+    #     try:
+
+    #         collection = self.client.get_or_create_collection(name=self.db_name, embedding_function=self.ef)
+    #         search_data = collection.query(query_texts=data, n_results=5, include=["metadatas","embeddings","documents"])
+    #         logging.info(f"-------------------검색완료-------------------")
+    #         return search_data
+    #     except Exception as e:
+    #         return {"message": str(e)}
